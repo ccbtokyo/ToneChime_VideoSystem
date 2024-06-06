@@ -1,16 +1,19 @@
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using UnityEngine.UI;
 
 public class DisplayManager : MonoBehaviour
 {
-
-    void Awake()
-    {
-        Screen.fullScreen = !Screen.fullScreen;
-        Screen.SetResolution(500,800,false);
-    }
+    public Camera mainCamera,UI_Camera;
+    public GameObject UI_Canva,UI_bg;
+    public Canvas canvas_black;
 
     void Start()
+    {
+        projection();
+    }
+
+    public void projection()
     {
 
         // ディスプレイの数を取得します
@@ -22,27 +25,43 @@ public class DisplayManager : MonoBehaviour
         {
             Display.displays[i].Activate();
         }
-    }
 
-
-
-    public void OutputToDisplay(int displayIndex)
-    {
-        if (displayIndex < Display.displays.Length)
+        
+        if(displayCount==1)
         {
-            // 特定のディスプレイにカメラを割り当てます
-            Camera.main.targetDisplay = displayIndex;
-            Debug.Log("Outputting to display: " + displayIndex);
-
-            // フルスクリーンモードに設定します
-            Screen.fullScreenMode = FullScreenMode.ExclusiveFullScreen;
-            Screen.SetResolution(Display.displays[displayIndex].systemWidth, Display.displays[displayIndex].systemHeight, true);
+            mainCamera.targetDisplay = 0;
+            canvas_black.targetDisplay = 0;
+            UI_bg.SetActive(false);
+            Screen.fullScreen = !Screen.fullScreen;
+            Screen.SetResolution(1920,1080,false);
         }
         else
         {
-            Debug.LogError("Invalid display index");
+            mainCamera.targetDisplay = 1;
+            canvas_black.targetDisplay = 1;
+            Screen.fullScreen = !Screen.fullScreen;
+            Screen.SetResolution(500,800,false);
         }
+
     }
+
+    // public void OutputToDisplay(int displayIndex)
+    // {
+    //     if (displayIndex < Display.displays.Length)
+    //     {
+    //         // 特定のディスプレイにカメラを割り当てます
+    //         Camera.main.targetDisplay = displayIndex;
+    //         Debug.Log("Outputting to display: " + displayIndex);
+
+    //         // フルスクリーンモードに設定します
+    //         Screen.fullScreenMode = FullScreenMode.ExclusiveFullScreen;
+    //         Screen.SetResolution(Display.displays[displayIndex].systemWidth, Display.displays[displayIndex].systemHeight, true);
+    //     }
+    //     else
+    //     {
+    //         Debug.LogError("Invalid display index");
+    //     }
+    // }
 
     public void _shutdownApp()
     {

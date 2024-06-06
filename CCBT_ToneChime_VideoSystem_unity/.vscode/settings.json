@@ -56,5 +56,5 @@
         "temp/": true,
         "Temp/": true
     },
-    "dotnet.defaultSolution": "CCBT_ToneChime_VideoSystem.sln"
+    "dotnet.defaultSolution": "CCBT_ToneChime_VideoSystem_unity.sln"
 }
