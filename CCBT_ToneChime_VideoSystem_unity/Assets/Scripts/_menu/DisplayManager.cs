@@ -1,6 +1,9 @@
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
+using System;
+using System.Runtime.InteropServices;
+using System.Collections;
 
 public class DisplayManager : MonoBehaviour
 {
@@ -43,25 +46,77 @@ public class DisplayManager : MonoBehaviour
             Screen.SetResolution(500,800,false);
         }
 
+        if (Application.platform == RuntimePlatform.WindowsPlayer || Application.platform == RuntimePlatform.WindowsEditor)
+        {
+            windowAdjust_forWindows();
+        }
     }
 
-    // public void OutputToDisplay(int displayIndex)
-    // {
-    //     if (displayIndex < Display.displays.Length)
-    //     {
-    //         // 特定のディスプレイにカメラを割り当てます
-    //         Camera.main.targetDisplay = displayIndex;
-    //         Debug.Log("Outputting to display: " + displayIndex);
+    [DllImport("user32.dll")]
+    private static extern IntPtr GetForegroundWindow();
 
-    //         // フルスクリーンモードに設定します
-    //         Screen.fullScreenMode = FullScreenMode.ExclusiveFullScreen;
-    //         Screen.SetResolution(Display.displays[displayIndex].systemWidth, Display.displays[displayIndex].systemHeight, true);
-    //     }
-    //     else
-    //     {
-    //         Debug.LogError("Invalid display index");
-    //     }
-    // }
+    [DllImport("user32.dll", SetLastError = true)]
+    private static extern bool GetWindowRect(IntPtr hWnd, ref Rect rect);
+
+    [DllImport("user32.dll", SetLastError = true)]
+    private static extern bool MoveWindow(IntPtr hWnd, int X, int Y, int nWidth, int nHeight, bool bRepaint);
+
+    [DllImport("user32.dll", SetLastError = true)]
+    private static extern long SetWindowLong(IntPtr hWnd, int nIndex, long dwNewLong);
+
+    [DllImport("user32.dll", SetLastError = true)]
+    private static extern long GetWindowLong(IntPtr hWnd, int nIndex);
+
+    private const int GWL_STYLE = -16;
+    private const long WS_CAPTION = 0x00C00000L;
+
+    [StructLayout(LayoutKind.Sequential)]
+    private struct Rect
+    {
+        public int Left;
+        public int Top;
+        public int Right;
+        public int Bottom;
+    }
+
+
+    void windowAdjust_forWindows()
+    {
+        // 現在のウィンドウハンドルを取得
+        IntPtr windowHandle = GetForegroundWindow();
+
+        // ウィンドウスタイルを設定してタイトルバーを表示
+        long style = GetWindowLong(windowHandle, GWL_STYLE);
+        SetWindowLong(windowHandle, GWL_STYLE, style | WS_CAPTION);
+
+        // 画面の右上にウィンドウを移動
+        StartCoroutine(MoveWindowToPosition());
+    }
+
+    IEnumerator MoveWindowToPosition()
+    {
+        yield return new WaitForSeconds(0.1f); // 少し待ってから位置を設定
+
+        while (true)
+        {
+            // 現在のウィンドウハンドルを取得
+            IntPtr windowHandle = GetForegroundWindow();
+
+            // ウィンドウの位置とサイズを取得
+            Rect rect = new Rect();
+            GetWindowRect(windowHandle, ref rect);
+
+            // 画面の右上にウィンドウを移動
+            int screenWidth = Screen.currentResolution.width;
+            int newX = screenWidth - (rect.Right - rect.Left);
+            int newY = 0;  // 上端
+
+            // ウィンドウを移動
+            MoveWindow(windowHandle, newX, newY, rect.Right - rect.Left, rect.Bottom - rect.Top, true);
+
+            yield return new WaitForSeconds(0.5f); // 定期的に位置を設定
+        }
+    }
 
     public void _shutdownApp()
     {
