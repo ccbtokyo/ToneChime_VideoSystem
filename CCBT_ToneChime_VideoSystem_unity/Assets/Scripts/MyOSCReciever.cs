@@ -11,6 +11,7 @@ public class MyOSCReciever : MonoBehaviour
     Vector2 startSize,startSpeed;
     //public Material particleMaterial;
     Renderer particleRender;
+    
     private void Start()
     {
         light = GetComponent<Light>();
@@ -61,7 +62,15 @@ public class MyOSCReciever : MonoBehaviour
         Color c = module.startColor.color;
         //module.startColor = new Color(c.r, c.b, c.g, v);
 
-        particleRender.material.color = new Color(c.r, c.g, c.b, v);
+        /////////////
+        ///
+        // particleRender.material.color = new Color(c.r, c.g, c.b, v);
+        var module_ = particle.main;
+        var startCol = module_.startColor.color;
+        startCol.a = v;
+        module_.startColor = new ParticleSystem.MinMaxGradient(startCol);
+        /////////////
+        ///
 
         //Debug.Log("velocity _ " + v);
 

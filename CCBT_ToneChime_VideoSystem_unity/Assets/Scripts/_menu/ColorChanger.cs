@@ -62,8 +62,14 @@ public class ColorChanger : MonoBehaviour
         colorPicker.gameObject.SetActive(true);
     }
 
-    void Update()
+    public void RefreshColorFromParticles()
     {
-        
+        if (myImage != null)
+        {
+            myImage.color = ParticlesHolder.instance.colors[myIndex];
+            currentColor = myImage.color;
+        }
     }
+
+
 }
